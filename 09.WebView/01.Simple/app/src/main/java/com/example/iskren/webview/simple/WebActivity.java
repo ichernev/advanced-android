@@ -1,19 +1,25 @@
 package com.example.iskren.webview.simple;
 
+import android.content.Context;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
 import android.webkit.JavascriptInterface;
 import android.webkit.WebChromeClient;
+import android.webkit.WebMessage;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
 import org.json.JSONArray;
 import org.json.JSONException;
 
-import java.util.Arrays;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 public class WebActivity extends AppCompatActivity {
 
@@ -21,40 +27,20 @@ public class WebActivity extends AppCompatActivity {
 
     private WebView webView = null;
 
-    static class JsObject {
+    private String baseUrl;
+
+    class JsObject {
         @JavascriptInterface
         public String toString() { return "injectedObject"; }
 
         @JavascriptInterface
-        public String join(String[] els, String sep) {
-            StringBuilder res = new StringBuilder();
-            for (int i = 0; i < els.length; i += 1) {
-                if (i != 0) {
-                    res.append(sep);
+        public void scriptLoaded() {
+            (new Handler(WebActivity.this.getMainLooper())).post(new Runnable() {
+                @Override
+                public void run() {
+                    WebActivity.this.doPostWebMessage();
                 }
-                res.append(els[i]);
-            }
-            return res.toString();
-        }
-
-        @JavascriptInterface
-        public void consume(double[] els) {
-            for (Object el : els) {
-                Log.i("TAG", "got " + el.getClass().getName());
-            }
-        }
-
-        @JavascriptInterface
-        public String returnJSON() {
-            JSONArray ar = new JSONArray();
-            ar.put("foo");
-            ar.put("bar");
-            ar.put("baz");
-            try {
-                return ar.toString(4);
-            } catch (JSONException e) {
-                return "Bad stuff";
-            }
+            });
         }
     }
 
@@ -88,18 +74,49 @@ public class WebActivity extends AppCompatActivity {
         }
 
         webView.addJavascriptInterface(new JsObject(), "injectedObject");
+//
+//        webView.loadData("<h1 id='x'>hi</h1>", "text/html", null);
+//
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            webView.evaluateJavascript("console.log(5)", null);
+//            webView.evaluateJavascript("console.log(injectedObject.join(['1', '2'], 'xxx'))", null); // 1xxx2
+//            webView.evaluateJavascript("console.log(injectedObject.join([1, '2'], 'xxx'))", null); // nullxxx2
+//            webView.evaluateJavascript("injectedObject.consume([1, 2, 3])", null);
+//            webView.evaluateJavascript("injectedObject.consume([1, '2', true, Math.PI, /ala/])", null);
+//            webView.evaluateJavascript("document.write(JSON.stringify(injectedObject.returnArray()))", null);
+//            //webView.evaluateJavascript("document.write(injectedObject.toString())", null);
+//        }
+//        // webView.loadUrl("javascript:console.log(injectedObject.toString())");
+        baseUrl = "file:///android_asset/index.html";
+        webView.loadDataWithBaseURL(
+                baseUrl,
+                readAssetFile(this, "index.html"),
+                "text/html",
+                "utf-8",
+                null);
 
-        webView.loadData("<h1 id='x'>hi</h1>", "text/html", null);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript("console.log(5)", null);
-            webView.evaluateJavascript("console.log(injectedObject.join(['1', '2'], 'xxx'))", null); // 1xxx2
-            webView.evaluateJavascript("console.log(injectedObject.join([1, '2'], 'xxx'))", null); // nullxxx2
-            webView.evaluateJavascript("injectedObject.consume([1, 2, 3])", null);
-            webView.evaluateJavascript("injectedObject.consume([1, '2', true, Math.PI, /ala/])", null);
-            webView.evaluateJavascript("document.write(JSON.stringify(injectedObject.returnArray()))", null);
-            //webView.evaluateJavascript("document.write(injectedObject.toString())", null);
-        }
-        // webView.loadUrl("javascript:console.log(injectedObject.toString())");
     }
+
+    private void doPostWebMessage() {
+        Log.i("TAG", "Now we can post!!");
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            webView.postWebMessage(new WebMessage("You can haz data"), Uri.parse(""));
+        }
+    }
+
+    private String readAssetFile(Context ctx, String filename) {
+        try {
+            InputStream inputStream = ctx.getAssets().open(filename);
+            ByteArrayOutputStream result = new ByteArrayOutputStream();
+            byte[] buffer = new byte[1024];
+            int length;
+            while ((length = inputStream.read(buffer)) != -1) {
+                result.write(buffer, 0, length);
+            }
+            return result.toString("UTF-8");
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
 }

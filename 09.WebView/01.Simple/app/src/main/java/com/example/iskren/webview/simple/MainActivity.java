@@ -21,6 +21,8 @@ public class MainActivity extends AppCompatActivity {
                 goButtonClicked();
             }
         });
+
+        goButtonClicked();
     }
 
     private void goButtonClicked() {
