@@ -62,51 +62,51 @@ public class WebActivity extends AppCompatActivity {
         webView = (WebView) findViewById(R.id.webview);
 
         // Otherwise the loadUrl below just spawns a real browser
-        webView.setWebViewClient(new WebViewClient() {
-
-            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-            @Override
-            public WebResourceResponse shouldInterceptRequest (
-                    WebView view, WebResourceRequest request) {
-                WebResourceResponse res = handleInterceptRequest(view, request.getUrl());
-                if (res == null) {
-                    return super.shouldInterceptRequest(view, request);
-                } else {
-                    return res;
-                }
-            }
-
-            @SuppressWarnings("deprecation")
-            @Override
-            public WebResourceResponse shouldInterceptRequest(WebView view, String x) {
-                WebResourceResponse res = handleInterceptRequest(view, Uri.parse(x));
-                if (res == null) {
-                    return super.shouldInterceptRequest(view, x);
-                } else {
-                    return res;
-                }
-            }
-
-            private WebResourceResponse handleInterceptRequest(WebView view, Uri uri) {
-                String req = uri.toString();
-                if (req.endsWith("script.js")) {
-                    try {
-                        InputStream is = getAssets().open(req.substring(baseUrl.length()));
-                        return new WebResourceResponse("application/javascript", "utf-8", is);
-                    } catch (IOException e) {
-                        WebResourceResponse res = new WebResourceResponse(
-                                "application/javascript", "utf-8", null);
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                            res.setStatusCodeAndReasonPhrase(404, "Not Found");
-                        }
-                        return res;
-                    }
-                } else {
-                    return null;
-                }
-            }
-
-        });
+        webView.setWebViewClient(new WebViewClient());
+//
+//            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+//            @Override
+//            public WebResourceResponse shouldInterceptRequest (
+//                    WebView view, WebResourceRequest request) {
+//                WebResourceResponse res = handleInterceptRequest(view, request.getUrl());
+//                if (res == null) {
+//                    return super.shouldInterceptRequest(view, request);
+//                } else {
+//                    return res;
+//                }
+//            }
+//
+//            @SuppressWarnings("deprecation")
+//            @Override
+//            public WebResourceResponse shouldInterceptRequest(WebView view, String x) {
+//                WebResourceResponse res = handleInterceptRequest(view, Uri.parse(x));
+//                if (res == null) {
+//                    return super.shouldInterceptRequest(view, x);
+//                } else {
+//                    return res;
+//                }
+//            }
+//
+//            private WebResourceResponse handleInterceptRequest(WebView view, Uri uri) {
+//                String req = uri.toString();
+//                if (req.endsWith("script.js")) {
+//                    try {
+//                        InputStream is = getAssets().open(req.substring(baseUrl.length()));
+//                        return new WebResourceResponse("application/javascript", "utf-8", is);
+//                    } catch (IOException e) {
+//                        WebResourceResponse res = new WebResourceResponse(
+//                                "application/javascript", "utf-8", null);
+//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+//                            res.setStatusCodeAndReasonPhrase(404, "Not Found");
+//                        }
+//                        return res;
+//                    }
+//                } else {
+//                    return null;
+//                }
+//            }
+//
+//        });
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage message) {
@@ -123,18 +123,18 @@ public class WebActivity extends AppCompatActivity {
             WebView.setWebContentsDebuggingEnabled(true);
         }
 
-        webView.addJavascriptInterface(new JsObject(), "injectedObject");
+//        webView.addJavascriptInterface(new JsObject(), "injectedObject");
 //
 //        webView.loadData("<h1 id='x'>hi</h1>", "text/html", null);
 //
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
-            webView.evaluateJavascript("[1,2,true, /ala/]", new ValueCallback<String>() {
-                @Override
-                public void onReceiveValue(String value) {
-                    Log.i("TAG", "Got back " + value);
-                }
-            });
-        }
+//        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
+//            webView.evaluateJavascript("[1,2,true, /ala/]", new ValueCallback<String>() {
+//                @Override
+//                public void onReceiveValue(String value) {
+//                    Log.i("TAG", "Got back " + value);
+//                }
+//            });
+//        }
 //            webView.evaluateJavascript("console.log(5)", null);
 //            webView.evaluateJavascript("console.log(injectedObject.join(['1', '2'], 'xxx'))", null); // 1xxx2
 //            webView.evaluateJavascript("console.log(injectedObject.join([1, '2'], 'xxx'))", null); // nullxxx2
@@ -144,23 +144,24 @@ public class WebActivity extends AppCompatActivity {
 //            //webView.evaluateJavascript("document.write(injectedObject.toString())", null);
 //        }
 //        // webView.loadUrl("javascript:console.log(injectedObject.toString())");
-        baseUrl = "https://iskren.info/"; // "file:///android_asset/index.html";
-        webView.loadDataWithBaseURL(
-                baseUrl,
-                readAssetFile(this, "index.html"),
-                "text/html",
-                "utf-8",
-                null);
+//        baseUrl = "https://iskren.info/"; // "file:///android_asset/index.html";
+//        webView.loadDataWithBaseURL(
+//                baseUrl,
+//                readAssetFile(this, "index.html"),
+//                "text/html",
+//                "utf-8",
+//                null);
 
-        final Handler h = new Handler(this.getMainLooper());
-        final Runnable r = new Runnable() {
-            @Override
-            public void run() {
-                webView.loadUrl("javascript:document.write(\"win\")");
-                h.postDelayed(this, 2000);
-            }
-        };
-        h.postDelayed(r, 1000);
+        webView.loadUrl(url);
+//        final Handler h = new Handler(this.getMainLooper());
+//        final Runnable r = new Runnable() {
+//            @Override
+//            public void run() {
+//                webView.loadUrl("javascript:document.write(\"win\")");
+//                h.postDelayed(this, 2000);
+//            }
+//        };
+//        h.postDelayed(r, 1000);
     }
 
     private void doPostWebMessage() {
