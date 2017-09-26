@@ -60,7 +60,13 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
         if (isChecked) {
             if ((provider.equals(LocationManager.GPS_PROVIDER) && hasFinePerm()) ||
                     (provider.equals(LocationManager.NETWORK_PROVIDER) && hasCoarsePerm())) {
-                locationManager.requestLocationUpdates(provider, 0, 0, locationListener);
+                try {
+                    locationManager.requestLocationUpdates(provider, 0, 0, locationListener);
+                } catch (SecurityException e) {
+                    Log.e(TAG, "Looks line a race condition to me -- no permission for provider " +
+                            provider + " " + e.toString());
+                    updatePermUI();
+                }
             } else {
                 buttonView.setChecked(!isChecked);
             }
@@ -136,8 +142,17 @@ public class MainActivity extends AppCompatActivity implements CompoundButton.On
 
     class MyLocationListener implements LocationListener {
 
-        public void onLocationChanged(Location location) {
+        public void onLocationChanged(final Location location) {
             Log.i(TAG, String.format("received location %s", location));
+            findViewById(R.id.location_log);
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    TextView tv = (TextView) findViewById(R.id.location_log);
+                    CharSequence existing = tv.getText();
+                    tv.setText(location.toString() + "\n" + existing);
+                }
+            });
             // Called when a new location is found by the network location provider.
             //makeUseOfNewLocation(location);
         }
