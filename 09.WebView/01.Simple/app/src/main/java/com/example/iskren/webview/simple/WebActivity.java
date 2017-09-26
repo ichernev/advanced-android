@@ -10,6 +10,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.webkit.ConsoleMessage;
+import android.webkit.GeolocationPermissions;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -62,61 +63,69 @@ public class WebActivity extends AppCompatActivity {
         webView = (WebView) findViewById(R.id.webview);
 
         // Otherwise the loadUrl below just spawns a real browser
-        webView.setWebViewClient(new WebViewClient());
-//
-//            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
-//            @Override
-//            public WebResourceResponse shouldInterceptRequest (
-//                    WebView view, WebResourceRequest request) {
-//                WebResourceResponse res = handleInterceptRequest(view, request.getUrl());
-//                if (res == null) {
-//                    return super.shouldInterceptRequest(view, request);
-//                } else {
-//                    return res;
-//                }
-//            }
-//
-//            @SuppressWarnings("deprecation")
-//            @Override
-//            public WebResourceResponse shouldInterceptRequest(WebView view, String x) {
-//                WebResourceResponse res = handleInterceptRequest(view, Uri.parse(x));
-//                if (res == null) {
-//                    return super.shouldInterceptRequest(view, x);
-//                } else {
-//                    return res;
-//                }
-//            }
-//
-//            private WebResourceResponse handleInterceptRequest(WebView view, Uri uri) {
-//                String req = uri.toString();
-//                if (req.endsWith("script.js")) {
-//                    try {
-//                        InputStream is = getAssets().open(req.substring(baseUrl.length()));
-//                        return new WebResourceResponse("application/javascript", "utf-8", is);
-//                    } catch (IOException e) {
-//                        WebResourceResponse res = new WebResourceResponse(
-//                                "application/javascript", "utf-8", null);
-//                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-//                            res.setStatusCodeAndReasonPhrase(404, "Not Found");
-//                        }
-//                        return res;
-//                    }
-//                } else {
-//                    return null;
-//                }
-//            }
-//
-//        });
+        webView.setWebViewClient(new WebViewClient() {
+
+            @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+            @Override
+            public WebResourceResponse shouldInterceptRequest (
+                    WebView view, WebResourceRequest request) {
+                WebResourceResponse res = handleInterceptRequest(view, request.getUrl());
+                if (res == null) {
+                    return super.shouldInterceptRequest(view, request);
+                } else {
+                    return res;
+                }
+            }
+
+            @SuppressWarnings("deprecation")
+            @Override
+            public WebResourceResponse shouldInterceptRequest(WebView view, String x) {
+                WebResourceResponse res = handleInterceptRequest(view, Uri.parse(x));
+                if (res == null) {
+                    return super.shouldInterceptRequest(view, x);
+                } else {
+                    return res;
+                }
+            }
+
+            private WebResourceResponse handleInterceptRequest(WebView view, Uri uri) {
+                String req = uri.toString();
+                if (req.endsWith("script.js")) {
+                    try {
+                        InputStream is = getAssets().open(req.substring(baseUrl.length()));
+                        return new WebResourceResponse("application/javascript", "utf-8", is);
+                    } catch (IOException e) {
+                        WebResourceResponse res = new WebResourceResponse(
+                                "application/javascript", "utf-8", null);
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                            res.setStatusCodeAndReasonPhrase(404, "Not Found");
+                        }
+                        return res;
+                    }
+                } else {
+                    return null;
+                }
+            }
+
+        });
+
         webView.setWebChromeClient(new WebChromeClient() {
             @Override
             public boolean onConsoleMessage(ConsoleMessage message) {
                 Log.i("TAG", message.toString());
                 return false;
             }
+
+            @Override
+            public void onGeolocationPermissionsShowPrompt(String origin, GeolocationPermissions.Callback callback) {
+                callback.invoke(origin, true, true);
+            }
         });
 
         // so that its like a normal browser
         webView.getSettings().setJavaScriptEnabled(true);
+        webView.getSettings().setGeolocationEnabled(true);
+
 
         // make it debuggable -- only in test!
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT) {
@@ -144,15 +153,15 @@ public class WebActivity extends AppCompatActivity {
 //            //webView.evaluateJavascript("document.write(injectedObject.toString())", null);
 //        }
 //        // webView.loadUrl("javascript:console.log(injectedObject.toString())");
-//        baseUrl = "https://iskren.info/"; // "file:///android_asset/index.html";
-//        webView.loadDataWithBaseURL(
-//                baseUrl,
-//                readAssetFile(this, "index.html"),
-//                "text/html",
-//                "utf-8",
-//                null);
+        baseUrl = "https://iskren.info/"; // "file:///android_asset/index.html";
+        webView.loadDataWithBaseURL(
+                baseUrl,
+                readAssetFile(this, "index.html"),
+                "text/html",
+                "utf-8",
+                null);
 
-        webView.loadUrl(url);
+        //webView.loadUrl(url);
 //        final Handler h = new Handler(this.getMainLooper());
 //        final Runnable r = new Runnable() {
 //            @Override

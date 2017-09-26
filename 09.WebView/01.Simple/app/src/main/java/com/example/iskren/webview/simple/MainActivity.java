@@ -1,8 +1,10 @@
 package com.example.iskren.webview.simple;
 
+import android.Manifest;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.AsyncTask;
+import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.TextUtils;
@@ -43,7 +45,14 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+        ActivityCompat.requestPermissions(this, new String [] {
+                Manifest.permission.ACCESS_FINE_LOCATION , Manifest.permission.ACCESS_COARSE_LOCATION }, 0);
         //goButtonClicked();
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String [] permissions, int [] grantResult) {
+        Log.i(TAG, String.format("%d %s %d", requestCode, permissions[0], grantResult[0]));
     }
 
     private void goButtonClicked() {
