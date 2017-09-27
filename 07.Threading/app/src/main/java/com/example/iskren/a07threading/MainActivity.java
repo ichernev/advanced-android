@@ -11,6 +11,8 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -21,61 +23,74 @@ public class MainActivity extends AppCompatActivity {
     private static final String TAG = "SampleThread";
     private static final int SERVICE_BOUND_MSG = 0;
 
-    private LocalService mService;
-    private boolean mBound;
+    /** Messenger for communicating with the service. */
+    Messenger mService = null;
+
+    /** Flag indicating whether we have called bind on the service. */
+    boolean mBound;
+
+    /**
+     * Class for interacting with the main interface of the service.
+     */
+    private ServiceConnection mConnection = new ServiceConnection() {
+        public void onServiceConnected(ComponentName className, IBinder service) {
+            // This is called when the connection with the service has been
+            // established, giving us the object we can use to
+            // interact with the service.  We are communicating with the
+            // service using a Messenger, so here we get a client-side
+            // representation of that from the raw IBinder object.
+            mService = new Messenger(service);
+            mBound = true;
+
+            handler.sendMessage(handler.obtainMessage(SERVICE_BOUND_MSG));
+        }
+
+        public void onServiceDisconnected(ComponentName className) {
+            // This is called when the connection with the service has been
+            // unexpectedly disconnected -- that is, its process crashed.
+            mService = null;
+            mBound = false;
+        }
+    };
+
+    public void sayHello() {
+        if (!mBound) return;
+        // Create and send a message to the service, using a supported 'what' value
+        Message msg = Message.obtain(null, MessengerService.MSG_SAY_HELLO, 0, 0);
+        try {
+            mService.send(msg);
+        } catch (RemoteException e) {
+            Log.e(TAG, "Got " + e);
+        }
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        Log.i(TAG, String.format("%s FIRST: process %d thread %s",
-                getClass().getName(), android.os.Process.myPid(), android.os.Process.myTid()));
     }
 
+    @Override
     protected void onStart() {
         super.onStart();
-
-        Intent intent = new Intent(this, LocalService.class);
-        bindService(intent, mConnection, Context.BIND_AUTO_CREATE);
+        // Bind to the service
+        bindService(new Intent(this, MessengerService.class), mConnection,
+                Context.BIND_AUTO_CREATE);
     }
 
-    protected void useService() {
-        Log.i(TAG, "RND " + mService.getRandomNumber());
-    }
-
+    @Override
     protected void onStop() {
         super.onStop();
-
+        // Unbind from the service
         if (mBound) {
             unbindService(mConnection);
             mBound = false;
         }
     }
 
-    /** Defines callbacks for service binding, passed to bindService() */
-    private ServiceConnection mConnection = new ServiceConnection() {
-
-        @Override
-        public void onServiceConnected(ComponentName className,
-                                       IBinder service) {
-            // We've bound to LocalService, cast the IBinder and get LocalService instance
-            LocalService.LocalBinder binder = (LocalService.LocalBinder) service;
-            mService = binder.getService();
-            mBound = true;
-
-            handler.sendMessage(handler.obtainMessage(SERVICE_BOUND_MSG));
-        }
-
-        @Override
-        public void onServiceDisconnected(ComponentName arg0) {
-            mBound = false;
-        }
-    };
-
     private void handleMessage(Message msg) {
         if (msg.what == SERVICE_BOUND_MSG) {
-            useService();
+            sayHello();
         }
     }
 

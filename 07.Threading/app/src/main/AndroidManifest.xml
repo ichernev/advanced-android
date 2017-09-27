@@ -25,6 +25,11 @@
             android:name=".LocalService"
             android:exported="false" />
 
+        <service
+            android:name=".MessengerService"
+            android:process=":yetanother"
+            android:exported="false" />
+
     </application>
 
 </manifest>
