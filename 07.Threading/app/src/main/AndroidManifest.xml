@@ -19,8 +19,12 @@
         <service
             android:name=".MainService"
             android:process=":another"
-            android:exported="false">
-        </service>
+            android:exported="false" />
+
+        <service
+            android:name=".LocalService"
+            android:exported="false" />
+
     </application>
 
 </manifest>
