@@ -4,16 +4,11 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.media.Image;
-import android.os.AsyncTask;
-import android.os.DeadObjectException;
 import android.os.Handler;
 import android.os.IBinder;
-import android.os.Looper;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
-import android.provider.MediaStore;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -57,6 +52,10 @@ public class MainActivity extends AppCompatActivity {
         if (!mBound) return;
         // Create and send a message to the service, using a supported 'what' value
         Message msg = Message.obtain(null, MessengerService.MSG_SAY_HELLO, 0, 0);
+        msg.getData().putString(MessengerService.KEY_NAME, "Slim Shady");
+        Bundle b = new Bundle();
+        b.putParcelable("a", new MyParcelable());
+        msg.getData().putParcelable("b", b);
         try {
             mService.send(msg);
         } catch (RemoteException e) {
