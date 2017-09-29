@@ -30,6 +30,12 @@ public class MainActivity extends AppCompatActivity {
          * function.
          */
 
+        callThread();
+
+        // doRest();
+    }
+
+    private void doRest() {
         setContentView(R.layout.activity_main);
         TextView tv = (TextView)findViewById(R.id.textview);
         tv.setText( stringFromJNI() + "\n" + runWithArgs(true, 5, Math.PI, "Iskren", new Object() {
@@ -76,6 +82,8 @@ public class MainActivity extends AppCompatActivity {
      * java.lang.UnsatisfiedLinkError exception !
      */
     public native String  unimplementedStringFromJNI();
+
+    public native void callThread();
 
     /* this is used to load the 'hello-jni' library on application
      * startup. The library has already been unpacked into

@@ -14,10 +14,11 @@
  * limitations under the License.
  *
  */
-#include <string.h>
-#include <stdio.h>
-#include <malloc.h>
+#include <cstring>
+#include <cstdlib>
 #include <jni.h>
+#include <pthread.h>
+#include <thread>
 #include <android/log.h>
 
 const char *TAG = "JNI";
@@ -31,6 +32,10 @@ const char *TAG = "JNI";
 
 extern "C" {
 
+/*
+JNIEXPORT jint JNICALL JNI_OnLoad(JavaVM* vm, void* aReserved);
+ */
+
 JNIEXPORT jstring JNICALL
 Java_com_example_iskren_a02ndk_MainActivity_stringFromJNI( JNIEnv* env,
                                                            jobject thiz );
@@ -43,7 +48,22 @@ JNIEXPORT jbyteArray JNICALL
 Java_com_example_iskren_a02ndk_MainActivity_reversedByteArray(JNIEnv *env, jobject instance,
                                                               jbyteArray inp_);
 
+
+JNIEXPORT void JNICALL
+Java_com_example_iskren_a02ndk_MainActivity_callThread(JNIEnv *env, jobject thiz);
+
 }
+
+JavaVM *vm;
+
+/*
+JNIEXPORT jint JNICALL
+JNI_OnLoad(JavaVM* theVM, void* aReserved) {
+    // cache java VM
+    vm = theVM;
+
+    //__android_log_print(ANDROID_LOG_INFO, TAG, "accepting vm");
+}*/
 
 JNIEXPORT jstring JNICALL
 Java_com_example_iskren_a02ndk_MainActivity_stringFromJNI( JNIEnv* env,
@@ -165,4 +185,67 @@ Java_com_example_iskren_a02ndk_MainActivity_reversedByteArray(JNIEnv *env, jobje
     env->ReleaseByteArrayElements(inp_, inp, 0);
 
     return res;
+}
+
+
+extern "C" {
+void *inThread(void *data);
+}
+
+
+void *inThread(void *data) {
+    JNIEnv *env;
+
+    vm->AttachCurrentThread(&env, NULL);
+
+    // int a = *((int *) data);
+    int *res = (int *) malloc(sizeof(int));
+    *res = 42;
+
+    __android_log_print(ANDROID_LOG_ERROR, TAG, "in thread %d", *((int *) data));
+    //__android_log_print(ANDROID_LOG_ERROR, TAG, "in thread %d", a);
+    //__android_log_print(ANDROID_LOG_ERROR, TAG, "pre attach");
+    // vm->AttachCurrentThread(&env, data);
+    //__android_log_print(ANDROID_LOG_ERROR, TAG, "in here");
+    vm->DetachCurrentThread();
+
+    //vm->DetachCurrentThread();
+
+    return (void *) res;
+}
+
+void callCThread() {
+//    int *a = (int *) malloc(sizeof(int));
+//    *a = 5;
+    int aa = 6;
+    static pthread_t thread;
+    static pthread_attr_t thread_attr;
+
+    pthread_attr_init(&thread_attr);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Before stuff");
+    int res = pthread_create(&thread, &thread_attr, &inThread, (void *) &aa);
+    __android_log_print(ANDROID_LOG_INFO, TAG, "after pthread_create");
+    if (res != 0) {
+        __android_log_print(ANDROID_LOG_ERROR, TAG, "Failed to start thread %d", res);
+        return;
+    }
+
+    void *result;
+    pthread_join(thread, &result);
+
+    __android_log_print(ANDROID_LOG_INFO, TAG, "Got result from thread %d",
+                        *((int *) result));
+}
+
+/*
+void callCppThread() {
+    std::thread thread(inThread);
+    thread.join();
+}*/
+
+JNIEXPORT void JNICALL
+Java_com_example_iskren_a02ndk_MainActivity_callThread(JNIEnv *env, jobject thiz) {
+    env->GetJavaVM(&vm);
+
+    callCThread();
 }
