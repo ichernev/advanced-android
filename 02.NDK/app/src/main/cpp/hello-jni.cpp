@@ -29,6 +29,22 @@ const char *TAG = "JNI";
  *   hello-jni/app/src/main/java/com/example/hellojni/HelloJni.java
  */
 
+extern "C" {
+
+JNIEXPORT jstring JNICALL
+Java_com_example_iskren_a02ndk_MainActivity_stringFromJNI( JNIEnv* env,
+                                                           jobject thiz );
+
+JNIEXPORT jstring JNICALL
+Java_com_example_iskren_a02ndk_MainActivity_runWithArgs(JNIEnv *env, jobject instance, jboolean b, jint i,
+                                                        jdouble d, jstring s_, jobject o);
+
+JNIEXPORT jbyteArray JNICALL
+Java_com_example_iskren_a02ndk_MainActivity_reversedByteArray(JNIEnv *env, jobject instance,
+                                                              jbyteArray inp_);
+
+}
+
 JNIEXPORT jstring JNICALL
 Java_com_example_iskren_a02ndk_MainActivity_stringFromJNI( JNIEnv* env,
                                                            jobject thiz )
@@ -65,14 +81,14 @@ Java_com_example_iskren_a02ndk_MainActivity_stringFromJNI( JNIEnv* env,
 #define ABI "unknown"
 #endif
 
-    return (*env)->NewStringUTF(env, "Hello from JNI !  Compiled with ABI " ABI ".");
+    return env->NewStringUTF("Hello from JNI !  Compiled with ABI " ABI ".");
 }
 
 #define ensureNoException(env, ret) \
-    if ((*env)->ExceptionCheck(env) == JNI_TRUE) { \
-        jthrowable ex = (*env)->ExceptionOccurred(env); \
-        (*env)->ExceptionClear(env); \
-        (*env)->Throw(env, ex); \
+    if ((env)->ExceptionCheck() == JNI_TRUE) { \
+        jthrowable ex = (env)->ExceptionOccurred(); \
+        (env)->ExceptionClear(); \
+        (env)->Throw(ex); \
         return (ret); \
     }
 
@@ -87,25 +103,25 @@ Java_com_example_iskren_a02ndk_MainActivity_stringFromJNI( JNIEnv* env,
 //}
 
 JNIEXPORT jstring JNICALL
-Java_com_example_hellojni_HelloJni_runWithArgs(JNIEnv *env, jobject instance, jboolean b, jint i,
+Java_com_example_iskren_a02ndk_MainActivity_runWithArgs(JNIEnv *env, jobject instance, jboolean b, jint i,
                                                jdouble d, jstring s_, jobject o) {
-    const char *s = (*env)->GetStringUTFChars(env, s_, 0);
+    const char *s = env->GetStringUTFChars(s_, 0);
 
-    jclass objectClass = (*env)->GetObjectClass(env, o);
+    jclass objectClass = env->GetObjectClass(o);
     ensureNoException(env, NULL);
-    jmethodID toStringID = (*env)->GetMethodID(env, objectClass, "toString", "()Ljava/lang/String;");
-    (*env)->DeleteLocalRef(env, objectClass);
-    jstring oToS = (*env)->CallObjectMethod(env, o, toStringID);
+    jmethodID toStringID = env->GetMethodID(objectClass, "toString", "()Ljava/lang/String;");
+    env->DeleteLocalRef(objectClass);
+    jstring oToS = (jstring) env->CallObjectMethod(o, toStringID);
     ensureNoException(env, NULL);
 
-    const char *s2 = (*env)->GetStringUTFChars(env, oToS, 0);
+    const char *s2 = env->GetStringUTFChars(oToS, 0);
 
     for (int i = 0; i < 10000; ++i) {
-        (*env)->PushLocalFrame(env, 16);
+        env->PushLocalFrame(16);
 
-        jstring s = (*env)->NewStringUTF(env, "Iskren");
+        jstring s = env->NewStringUTF("Iskren");
 
-        (*env)->PopLocalFrame(env, NULL);
+        env->PopLocalFrame(NULL);
     }
 
     int total = 0;
@@ -115,7 +131,7 @@ Java_com_example_hellojni_HelloJni_runWithArgs(JNIEnv *env, jobject instance, jb
     total += 1 + strlen(s);
     total += 1 + strlen(s2);
 
-    char *resUtf8 = malloc(total + 1);
+    char *resUtf8 = (char *) malloc(total + 1);
     int total2 = snprintf(resUtf8, total+1, "%d %d %.2lf %s %s", (int) b, (int) i, (double) d, s, s2);
     if (total2 != total) {
         __android_log_print(ANDROID_LOG_ERROR, TAG,
@@ -124,29 +140,29 @@ Java_com_example_hellojni_HelloJni_runWithArgs(JNIEnv *env, jobject instance, jb
         return NULL;
     }
 
-    jstring res = (*env)->NewStringUTF(env, resUtf8);
+    jstring res = env->NewStringUTF(resUtf8);
     free(resUtf8);
-    (*env)->ReleaseStringUTFChars(env, oToS, s2);
-    (*env)->ReleaseStringUTFChars(env, s_, s);
+    env->ReleaseStringUTFChars(oToS, s2);
+    env->ReleaseStringUTFChars(s_, s);
 
     return res;
 }
 
 JNIEXPORT jbyteArray JNICALL
-Java_com_example_hellojni_HelloJni_reversedByteArray(JNIEnv *env, jobject instance,
+Java_com_example_iskren_a02ndk_MainActivity_reversedByteArray(JNIEnv *env, jobject instance,
                                                      jbyteArray inp_) {
-    jbyte *inp = (*env)->GetByteArrayElements(env, inp_, NULL);
+    jbyte *inp = env->GetByteArrayElements(inp_, NULL);
 
-    jsize inpLength = (*env)->GetArrayLength(env, inp_);
-    jbyteArray res = (*env)->NewByteArray(env, inpLength);
+    jsize inpLength = env->GetArrayLength(inp_);
+    jbyteArray res = env->NewByteArray(inpLength);
 
-    jbyte *resBytes = (*env)->GetByteArrayElements(env, res, NULL);
+    jbyte *resBytes = env->GetByteArrayElements(res, NULL);
     for (int i = 0; i < inpLength; ++i) {
         resBytes[i] = inp[inpLength - 1 - i];
     }
-    (*env)->ReleaseByteArrayElements(env, res, resBytes, 0);
+    env->ReleaseByteArrayElements(res, resBytes, 0);
 
-    (*env)->ReleaseByteArrayElements(env, inp_, inp, 0);
+    env->ReleaseByteArrayElements(inp_, inp, 0);
 
     return res;
 }
