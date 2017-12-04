@@ -2,8 +2,6 @@ package com.exercise.permissions;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
 import android.support.annotation.RequiresPermission;
 import android.telephony.TelephonyManager;
 
@@ -27,7 +25,7 @@ public class TelephonyUtils {
 
         // Returns the unique device ID, for example, the IMEI for GSM and the MEID or ESN for CDMA
         // phones. Return null if device ID is not available. Requires Permission: READ_PHONE_STATE
-        //builder.append("DEVICE_ID: ").append(tm.getDeviceId()).append("\n");
+        builder.append("DEVICE_ID: ").append(tm.getDeviceId()).append("\n");
 
 
         // Returns the phone number string for line 1, for example, the MSISDN for a GSM phone.

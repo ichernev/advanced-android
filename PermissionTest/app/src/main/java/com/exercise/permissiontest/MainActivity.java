@@ -26,6 +26,8 @@ public class MainActivity extends AppCompatActivity {
     TextView tvDeviceId;
     Button btnGetInfo;
 
+    private static final int REQUEST_CODE = 123;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -43,15 +45,55 @@ public class MainActivity extends AppCompatActivity {
         btnGetInfo.setEnabled(hasPermission);
     }
 
-    public void doPermissionCheck(View view) {
+    public void askPermission(View view) {
+        // Here, this is the current activity
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) != PackageManager.PERMISSION_GRANTED) {
+
+
+            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_PHONE_STATE)) {
+
+                Toast.makeText(this, "It is needed, sorry!", Toast.LENGTH_SHORT).show();
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_CODE);
+
+            } else {
+                ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.READ_PHONE_STATE}, REQUEST_CODE);
+            }
+
+        } else {
+            Toast.makeText(this, "Already ok", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, String permissions[], int[] grantResults) {
+        switch (requestCode) {
+            case REQUEST_CODE: {
+                // If request is cancelled, the result arrays are empty.
+                if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+
+                    // permission was granted, yay! Do the contacts-related task you need to do.
+
+                } else {
+
+                    // permission denied, boo! Disable the functionality that depends on this permission.
+                }
+                return;
+            }
+
+            // other 'case' lines to check for other permissions this app might request
+        }
+    }
+
+    public void getInfo(View view) {
         //Toast.makeText(this, "Permission Check", Toast.LENGTH_SHORT).show();
 
+        tvDeviceId.setText(getDeviceId());
+    }
+
+    private String getDeviceId() {
         TelephonyManager tm = (TelephonyManager) getSystemService(Context.TELEPHONY_SERVICE);
-
-
         String deviceId = tm.getDeviceId();
-
-        tvDeviceId.setText(deviceId);
+        return deviceId;
     }
 
 
@@ -101,4 +143,30 @@ public class MainActivity extends AppCompatActivity {
             }
         }.execute();
     }
+
+
+//    public void askPermission(View view) {
+//        // Here, this is the current activity
+//        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+//
+//            // Should we show an explanation?
+//            if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.READ_CONTACTS)) {
+//
+//                // Show an explanation to the user *asynchronously* -- don't block
+//                // this thread waiting for the user's response! After the user
+//                // sees the explanation, try again to request the permission.
+//
+//            } else {
+//                // No explanation needed, we can request the permission.
+//                ActivityCompat.requestPermissions(this,
+//                        new String[]{Manifest.permission.READ_CONTACTS},
+//                        REQUEST_CODE);
+//
+//                // MY_PERMISSIONS_REQUEST_READ_CONTACTS is an
+//                // app-defined int constant. The callback method gets the
+//                // result of the request.
+//            }
+//        }
+//    }
+
 }

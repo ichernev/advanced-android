@@ -5,6 +5,7 @@ import android.content.DialogInterface;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresPermission;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AlertDialog;
@@ -20,6 +21,8 @@ import java.net.URL;
 
 public class MainActivity extends AppCompatActivity {
 
+    Foreground.Listener mListener;
+
     private static final int PERMISSIONS_REQUEST_READ_PHONE_STATE = 1000;
 
     TextView mTelephonyCheck;
@@ -29,12 +32,30 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        mListener = new Foreground.Listener() {
+            @Override
+            public void onBecameForeground() {
+                super.onBecameForeground();
+                //only in this activity
+            }
+        };
+
+        Foreground.get().addListener(mListener);
+
         mTelephonyCheck = (TextView) findViewById(R.id.telephony_check);
         mTelephonyCheck.setText(String.valueOf(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_PHONE_STATE) == PackageManager.PERMISSION_GRANTED));
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //remove listeners added in this activity (clean up)
+        Foreground.get().removeListener(mListener);
+    }
+
     public void testNetwork(View v) {
         networkTest();
+        getInfo(null);
     }
 
     public void getInfo(View v) {
