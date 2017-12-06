@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Sharing</string>
+    <string name="title_activity_basic">BasicActivity</string>
+
+    <!--create a facebook app and set id in order FB to work-->
+    <string name="facebook_app_id"></string>
+
+    <string name="com.twitter.sdk.android.CONSUMER_KEY">XXXXXXXXXXX</string>
+    <string name="com.twitter.sdk.android.CONSUMER_SECRET">XXXXXXXXXXX</string>
+</resources>
