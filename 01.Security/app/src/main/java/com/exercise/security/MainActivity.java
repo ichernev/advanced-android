@@ -4,13 +4,12 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
-import android.view.Window;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
@@ -25,14 +24,9 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.util.Scanner;
-import java.util.concurrent.Executor;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -94,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
                                     // Validate the user response token using the
                                     // reCAPTCHA siteverify API.
 
-                                    new SimpleTask(tvInfo, pbLoader){
+                                    new SimpleTask(tvInfo, pbLoader) {
 
                                         @Override
                                         protected String doInBackground(Void... params) {
@@ -163,7 +157,7 @@ public class MainActivity extends AppCompatActivity {
 
         try {
             InputStream in = new FileInputStream(file);
-            byte[] b  = new byte[(int)file.length()];
+            byte[] b = new byte[(int) file.length()];
             int len = b.length;
             int total = 0;
 
@@ -175,8 +169,8 @@ public class MainActivity extends AppCompatActivity {
                 total += result;
             }
 
-            return new String( b , "UTF-8" );
-        }catch (Exception e) {
+            return new String(b, "UTF-8");
+        } catch (Exception e) {
             return "err: " + e.getMessage();
         }
     }
@@ -234,19 +228,19 @@ public class MainActivity extends AppCompatActivity {
         mNewValues.put(SimpleDatabase.COL_URL, "http://google.com");
 
         mNewUri = getContentResolver().insert(SimpleProvider.CONTENT_URI, mNewValues);
-        Log.d("INSERTED", "URI:"+ mNewUri);
+        Log.d("INSERTED", "URI:" + mNewUri);
 
         mNewValues = new ContentValues();
         mNewValues.put(SimpleDatabase.COL_TITLE, "telenor");
         mNewValues.put(SimpleDatabase.COL_URL, "http://telenor.bg");
 
         mNewUri = getContentResolver().insert(SimpleProvider.CONTENT_URI, mNewValues);
-        Log.d("INSERTED", "URI:"+ mNewUri);
+        Log.d("INSERTED", "URI:" + mNewUri);
     }
 
     @UiThread
     public void getDataFromCP(View view) {
-        String[] projection = { SimpleDatabase.ID, SimpleDatabase.COL_TITLE };
+        String[] projection = {SimpleDatabase.ID, SimpleDatabase.COL_TITLE};
 
         Cursor linksCursor = getContentResolver().query(SimpleProvider.CONTENT_URI, projection, null, null, null);
 

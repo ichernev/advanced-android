@@ -31,6 +31,7 @@ public class SimpleProvider extends ContentProvider {
     public static final String CONTENT_TABLE_TYPE = ContentResolver.CURSOR_DIR_BASE_TYPE + "/links";
 
     private static final UriMatcher sURIMatcher = new UriMatcher(UriMatcher.NO_MATCH);
+
     static {
         sURIMatcher.addURI(AUTHORITY, BASE_PATH, LINKS);
         sURIMatcher.addURI(AUTHORITY, BASE_PATH + "/#", LINK_ID);
@@ -68,7 +69,7 @@ public class SimpleProvider extends ContentProvider {
 
     @Override
     public String getType(@NonNull Uri uri) {
-        switch (sURIMatcher.match(uri)){
+        switch (sURIMatcher.match(uri)) {
             case LINKS:
                 return CONTENT_TABLE_TYPE;
             case LINK_ID:
@@ -125,10 +126,10 @@ public class SimpleProvider extends ContentProvider {
             case LINK_ID:
                 count = sqlDB.update(SimpleDatabase.TABLE_LINKS, values,
                         SimpleDatabase.ID + " = " + uri.getPathSegments().get(1) +
-                                (!TextUtils.isEmpty(selection) ? " AND (" +selection + ')' : ""), selectionArgs);
+                                (!TextUtils.isEmpty(selection) ? " AND (" + selection + ')' : ""), selectionArgs);
                 break;
             default:
-                throw new IllegalArgumentException("Unknown URI " + uri );
+                throw new IllegalArgumentException("Unknown URI " + uri);
         }
 
         sqlDB.close();

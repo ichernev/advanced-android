@@ -1,7 +1,6 @@
 package com.exercise.security;
 
 import android.content.Context;
-import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
 import android.util.Log;
 
@@ -145,7 +144,7 @@ public class ConnectionUtil {
             con.setRequestMethod("POST");
             con.setRequestProperty("Accept-Language", "en-US,en;q=0.5");
 
-            String urlParameters = "secret="+secretKey+"&response="+token;
+            String urlParameters = "secret=" + secretKey + "&response=" + token;
 
             // Send post request
             con.setDoOutput(true);
