@@ -1,5 +1,2 @@
 gitflow
-
-
-
 one more thing
